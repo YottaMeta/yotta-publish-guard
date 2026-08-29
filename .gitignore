@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# npm 打包
+*.tgz
+node_modules/
+
+# 系统
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# GitHub Actions workflow（当前 PAT 无 workflow scope，不入库）
+.github/workflows/
