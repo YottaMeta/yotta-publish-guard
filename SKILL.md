@@ -1,7 +1,7 @@
 ---
 name: yotta-publish-guard
-version: 0.1.0
-description: 元守 —— 发布前守门：check 聚合校验（full / github / self 三档模式，可聚合元安/元审/元信 verdict）+ pack（npm pack 无 pyc / 关键文件在包内）+ versions（package/SKILL/CHANGELOG/CLI 四件对齐）+ names（npm/GitHub/ClawHub 三通道查重）+ publish 命令封装（--channels / --github-only 渠道可选，默认 dry-run，--exec 执行，--force 显式跳过推送闸门）。触发：发布任何 yotta- 技能前、改完技能准备推 GitHub / npm / ClawHub 时、想批量核对版本或查重名称时；或用户说 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐 等。边界（Do NOT trigger）：不替用户做发布决策与人工审查；网络不可用时只降级提示、不伪造结果；不做技能内容开发（脚手架用元造 yotta-skill-creator，正文需人工开发）。
+version: 0.1.1
+description: 元守 —— 发布前守门：check 聚合校验（full / github / self 三档模式，可聚合元安/元审/元信 verdict）+ pack（npm pack 无 pyc / 关键文件在包内）+ versions（package/SKILL/CHANGELOG/CLI 四件对齐）+ names（npm/GitHub/ClawHub 三通道查重）+ publish 命令封装（--channels / --github-only 渠道可选，--clawhub-owner 归属默认 yottameta，默认 dry-run，--exec 执行，--force 显式跳过推送闸门）。触发：发布任何 yotta- 技能前、改完技能准备推 GitHub / npm / ClawHub 时、想批量核对版本或查重名称时；或用户说 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐 等。边界（Do NOT trigger）：不替用户做发布决策与人工审查；网络不可用时只降级提示、不伪造结果；不做技能内容开发（脚手架用元造 yotta-skill-creator，正文需人工开发）。
 license: MIT
 metadata:
   zh_name: 元守
@@ -61,7 +61,7 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 - **pack**：`npm pack --dry-run` 检查——包内无 pyc / __pycache__、关键文件（SKILL / LICENSE / README 中英）在包内；npm 不可用本地回退列举。
 - **versions**：package.json / SKILL.md / CHANGELOG 顶部 / CLI `VERSION` 常量四件对齐。
 - **names**：npm view / gh repo view / clawhub search 三通道查重；网络失败降级为手动查重提示。
-- **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish），默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
+- **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish），clawhub publish 默认 `--owner yottameta` 归属 org（`--clawhub-owner` 可改），默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
 
 ## 发布渠道（可选）
 

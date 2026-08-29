@@ -1,5 +1,16 @@
 # 更新日志
 
+## v0.1.1 (2026-08-29)
+
+修复（维护性，免费家族「仅维护性修复」边界内）：
+
+- **ClawHub 发布归属（关键修复）**：`publish` 生成的 clawhub 命令默认带 `--owner yottameta`
+  （org handle），避免漏传导致发布到 CLI 登录的个人账号（2026-08-29 元造 / 元守曾误发到
+  @gon-kvs，已用 ClawHub transfer 转移修复）；新增 `--clawhub-owner` 可覆盖归属。
+- **GitHub 建仓描述上限**：gh repo create --description 上限 350 字符，package.json 长描述
+  超限会报 GraphQL 错；计划自动截断（>350 → 前 347 + "..."）。
+- 测试：38 → 41 用例（+2 回归：clawhub --owner 默认 / 覆盖）Python 3.8 + 3.13 双版本全绿。
+
 ## v0.1.0 (2026-08-29)
 
 初始发布：

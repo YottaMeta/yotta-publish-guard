@@ -62,7 +62,7 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 - **pack**：`npm pack --dry-run` 检查——包内无 pyc / __pycache__、关键文件（SKILL / LICENSE / README 中英）在包内；npm 不可用本地回退。
 - **versions**：package.json / SKILL.md / CHANGELOG 顶部 / CLI `VERSION` 常量四件对齐。
 - **names**：npm view / gh repo view / clawhub search 三通道查重；网络失败降级为手动查重提示。
-- **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish），默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
+- **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish），clawhub publish 默认 `--owner yottameta` 归属 org（`--clawhub-owner` 可改，防止误发到个人账号），默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
 
 ## 发布渠道（可选）
 

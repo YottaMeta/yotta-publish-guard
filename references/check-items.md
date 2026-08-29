@@ -50,6 +50,7 @@
 - ClawHub：`clawhub search --exact <slug> --limit 5`；无精确匹配 → FREE。
 - 任一通道无法确认（网络 / CLI 不可用）→ 退出码 1，并输出三通道手动查重链接。
 - 任一通道 TAKEN → 退出码 2（发布前必须改名或确认归属）。
+- ClawHub 发布归属：`publish` 的 clawhub 命令默认 `--owner yottameta`（org handle），`--clawhub-owner` 可覆盖；勿漏传导致发布到 CLI 登录的个人账号。
 
 ## 7. 与元安 / 元审 / 元信聚合
 

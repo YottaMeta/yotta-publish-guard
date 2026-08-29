@@ -11,7 +11,7 @@
 2. **gh repo create** —— `YottaMeta/<slug> --public --source=. --push --description <desc>`（必带 --description）
 3. **gh repo edit --add-topic yottaskills** —— 聚合进 https://github.com/topics/yottaskills
 4. **npm publish** —— `--registry=https://registry.npmjs.org/`（Windows 加可写 --cache）
-5. **clawhub publish** —— `--name '<中文名> <slug>'`（整体带引号）+ `--version` + `--categories` + `--topics`
+5. **clawhub publish** —— `--name '<中文名> <slug>'`（整体带引号）+ `--owner yottameta`（org 归属，默认值）+ `--version` + `--categories` + `--topics`
 
 只推 GitHub 用 `--github-only`（等价 `--channels github`）；`--channels npm,clawhub` 可任选组合。
 
@@ -21,6 +21,7 @@
 |---|---|---|
 | git 代理 | Windows schannel 报 SEC_E_NO_CREDENTIALS | 计划注释提示加 `-c http.sslBackend=openssl -c http.proxy=<代理地址>`（具体地址按本机配置填写） |
 | gh repo create 缺简介 | About 显示 "No description or website provided." | 计划必带 --description（可用 --description 覆盖） |
+| ClawHub 漏传 --owner | 发布到 CLI 登录的个人账号（如 @gon-kvs）而非 org @yottameta | 计划默认带 `--owner yottameta`（`--clawhub-owner` 可改） |
 | ClawHub --name 不带引号 | 展示名回退裸 slug，丢中文「元X」 | 计划整体带引号：`--name '元X yotta-x'` |
 | ClawHub categories 非法 slug | 报 Unknown skill category slug | 默认按安全/普通自动选 security / productivity（可 --categories 覆盖） |
 | npm 缓存目录不可写 | 沙箱 / CI 环境报错 | Windows 自动加可写 --cache 临时目录 |

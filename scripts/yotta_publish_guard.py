@@ -32,7 +32,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 TOOL_NAME = "yotta-publish-guard"
 CN_NAME = "元守"
 
@@ -607,6 +607,9 @@ def _shell_quote(v):
     return v
 
 
+GH_DESC_MAX = 350  # GitHub repo description 上限（createRepository 拒绝 >350 字符）
+
+
 def _publish_plan(d: Path, args):
     """构建发布命令计划。返回 (渠道列表, 计划行列表, 阻断 errors)。"""
     channels = _channels_from_args(args)
@@ -631,6 +634,8 @@ def _publish_plan(d: Path, args):
         zh = (fm.get("metadata") or {}).get("zh_name") or fm.get("zh_name") or slug
     if args.description:
         desc = args.description
+    if len(desc) > GH_DESC_MAX:
+        desc = desc[:GH_DESC_MAX - 3] + "..."
     if is_security(slug, desc):
         cats = args.categories or "security"
     else:
@@ -655,9 +660,11 @@ def _publish_plan(d: Path, args):
             npm_cmd += ["--cache", cache]
         plan.append(("npm publish", npm_cmd))
     if "clawhub" in channels:
+        owner = getattr(args, "clawhub_owner", "") or "yottameta"
         plan.append(("clawhub publish",
                      ["clawhub", "publish", str(d),
                       "--name", "%s %s" % (zh, slug),
+                      "--owner", owner,
                       "--version", pkg_v,
                       "--categories", cats,
                       "--topics", topics]))
@@ -666,7 +673,7 @@ def _publish_plan(d: Path, args):
                      "git 走代理需加 -c http.sslBackend=openssl（schannel 报 SEC_E_NO_CREDENTIALS）"))
     if "clawhub" in channels:
         plan.append(("note",
-                     "clawhub 发布前可先跑 --dry-run 预览；GitHub 建仓必须带 --description（否则 About 显示 No description）"))
+                     "clawhub 发布默认归属 org yottameta（--clawhub-owner 可改，勿发布到个人账号）；GitHub 建仓必须带 --description（否则 About 显示 No description）"))
     return channels, plan, errors
 
 
@@ -753,6 +760,8 @@ def build_parser():
                     help="只推 GitHub（等价 --channels github；npm / ClawHub 非必选）")
     ppu.add_argument("--categories", default="", help="ClawHub 分类 slug（逗号分隔）")
     ppu.add_argument("--topics", default="", help="ClawHub topics（逗号分隔）")
+    ppu.add_argument("--clawhub-owner", default="yottameta",
+                    help="ClawHub 发布归属 org handle（默认 yottameta；勿发布到个人账号）")
     ppu.add_argument("--description", default="", help="GitHub 仓库简介（覆盖 package.json description）")
     ppu.set_defaults(func=cmd_publish)
     return ap

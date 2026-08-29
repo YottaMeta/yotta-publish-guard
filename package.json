@@ -1,6 +1,6 @@
 {
   "name": "@yottameta/yotta-publish-guard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "YuanShou (元守) — a zero-dependency Python 3.8+ pre-publish release guard for yotta- skills: check (full / github / self modes, optional yotta-security-audit / yotta-vetter / yotta-verify verdicts), pack (npm pack dry-run: no pyc, key files in package), versions (package/SKILL/CHANGELOG/CLI four-way alignment), names (npm/GitHub/ClawHub three-channel availability) and publish wrapper (--channels / --github-only, dry-run default, --exec to run, --force to bypass the push gate). Triggers: before publishing any yotta- skill, after edits before pushing to GitHub / npm / ClawHub, or batch version/name checks; or says 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐. Boundaries: never makes the publishing decision or replaces human review; on network failure only degrades to a manual-check hint, never fabricates results; does not develop skill content.",
   "license": "MIT",
   "keywords": [

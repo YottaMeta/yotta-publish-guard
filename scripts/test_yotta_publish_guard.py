@@ -3,6 +3,7 @@
 import argparse
 import contextlib
 import io
+import re
 import json
 import shutil
 import subprocess
@@ -315,7 +316,7 @@ class TestPublish(TmpDir):
     def _args(self, **kw):
         base = dict(dir=str(self.d), dry_run=True, exec=False, force=False,
                     channels="", github_only=False, categories="",
-                    topics="", description="")
+                    topics="", description="", clawhub_owner="yottameta")
         base.update(kw)
         return argparse.Namespace(**base)
 
@@ -376,6 +377,30 @@ class TestPublish(TmpDir):
         self.assertEqual(pg._shell_quote("元X yotta-x"), "'元X yotta-x'")
         self.assertEqual(pg._shell_quote("it's"), '"it\'s"')
         self.assertEqual(pg._shell_quote(""), "''")
+
+    def test_dry_run_clawhub_owner(self):
+        # 回归：clawhub publish 计划必须带 --owner yottameta（防发布到个人账号 @gon-kvs）
+        make_complete(self.d)
+        code, out = self._capture(pg.cmd_publish, self._args())
+        self.assertEqual(code, 0)
+        self.assertIn("clawhub publish", out)
+        self.assertIn("--owner yottameta", out)
+
+    def test_clawhub_owner_override(self):
+        make_complete(self.d)
+        code, out = self._capture(pg.cmd_publish, self._args(clawhub_owner="otherorg"))
+        self.assertEqual(code, 0)
+        self.assertIn("--owner otherorg", out)
+
+    def test_gh_desc_truncated(self):
+        make_complete(self.d)
+        long_desc = "长描述描述描述描述 " * 60  # >350 字符
+        code, out = self._capture(pg.cmd_publish, self._args(description=long_desc))
+        self.assertEqual(code, 0)
+        m = re.search(r"--description '([^']*)'", out)
+        self.assertIsNotNone(m, "计划里应包含 --description")
+        self.assertLessEqual(len(m.group(1)), 350)
+        self.assertTrue(m.group(1).endswith("..."))
 
     def test_force_bypasses_gate(self):
         code, out = self._capture(pg.cmd_publish, self._args(force=True))

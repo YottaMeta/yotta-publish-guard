@@ -55,7 +55,7 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 - **pack** — `npm pack --dry-run`: no pyc / __pycache__ in the tarball, key files (SKILL / LICENSE / bilingual README) present; local fallback when npm is unavailable.
 - **versions** — align package.json / SKILL.md / CHANGELOG top / CLI `VERSION` constant.
 - **names** — npm view / gh repo view / clawhub search three-channel availability; degrades to manual-check hints when the network fails.
-- **publish** — generates the command plan (git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish), dry-run by default, `--exec` executes in order, `--force` explicitly bypasses the push gate.
+- **publish** — generates the command plan (git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish), dry-run by default, `--exec` executes in order, `--force` explicitly bypasses the push gate. The clawhub command defaults to `--owner yottameta` (the org handle) — override with `--clawhub-owner` so a publish can never land on a personal account.
 
 ## Channels (optional)
 
