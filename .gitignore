@@ -12,5 +12,5 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# GitHub Actions workflow（当前 PAT 无 workflow scope，不入库）
-.github/workflows/
+# GitHub Actions workflow（OIDC trusted publishing，入库触发 tag 发布）
+.github/workflows/publish.yml
