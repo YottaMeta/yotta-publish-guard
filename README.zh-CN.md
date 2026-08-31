@@ -6,12 +6,12 @@
 
 <h1 align="center">yotta-publish-guard · 元守 (YuanShou)</h1>
 
-<p align="center">YottaMeta 的<b>发布前守门</b>：把元阁「发布规范 + 已踩过的坑」固化成确定性 CLI ——
+<p align="center"><b>通用发布前守门</b>（默认 YottaMeta 归属，可自定义为任意发布组织）：把「发布规范 + 已踩过的坑」固化成确定性 CLI ——
 <code>check</code>（聚合校验，full / github / self 三档模式）· <code>pack</code>（npm pack 打包检查）·
 <code>versions</code>（版本四件对齐）· <code>names</code>（名称三通道查重）·
-<code>publish</code>（发布命令封装 + 推送闸门）。<b>零外部依赖（Python 3.8+ 标准库）</b>；
+<code>publish</code>（发布命令封装 + 推送闸门）。<b>零其他依赖（Python 3.8+ 标准库）</b>；
 Windows + Linux + macOS 通用。</p>
-<p align="center">触发场景：发布任何 yotta- 技能前、改完技能准备推 GitHub / npm / ClawHub 时、
+<p align="center">触发场景：发布技能前、改完技能准备推 GitHub / npm / ClawHub 时、
 想批量核对版本或查重名称时；或说 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐 等。</p>
 
 <p align="center">
@@ -47,6 +47,14 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool
 python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --github-only
 python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github,npm --exec
 ```
+
+
+## 归属配置（可自定义）
+
+默认校验 / 发布命令面向 YottaMeta 归属（npm `@yottameta` / GitHub `YottaMeta` / ClawHub `yottameta` / topic `yottaskills`），开箱即用。
+其他发布组织可改为自己的归属（npm scope / GitHub org / ClawHub owner / topic），改后校验、查重、发布命令全部按新归属生成；
+归属经 CLI 参数或环境变量指定，使用本技能的 AI 会按需引导配置。
+本技能不持有、不读取任何平台凭据——npm / gh / clawhub 的发布鉴权由各平台 CLI 按使用者本机配置完成。
 
 ## 三档校验模式
 

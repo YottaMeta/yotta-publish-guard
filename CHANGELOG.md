@@ -1,8 +1,19 @@
 # 更新日志
 
+## v0.2.0 (2026-09-01)
+
+通用化：从「YottaMeta 专属发布守门」升级为「任意发布组织可用的通用发布前守门」。
+
+- **归属可配置**：npm scope / GitHub org / ClawHub owner / topic 从硬编码改为可配置（CLI 参数 `--npm-scope` / `--github-org` / `--clawhub-owner` / `--topic`，或环境变量 `YOTTA_GUARD_*`）；默认仍 YottaMeta（@yottameta / YottaMeta / yottameta / yottaskills）开箱即用，其他组织按自己归属配置即可。
+- **全链路按配置生效**：check（README 四方式安装正则 / package.json 包名）、names（npm / GitHub 三通道查重标签）、publish（gh repo create / topic / clawhub --owner）全部按归属配置生成；不再写死单一组织。
+- **凭据零接触**：本技能不持有、不读取任何平台凭据——npm / gh / clawhub 发布鉴权由各平台 CLI 按使用者本机配置完成；不提供配置教程，使用本技能的 AI 按需引导配置。
+- 文档：SKILL.md / README 中英更新「通用发布守门」定位 + 归属配置说明；触发语去组织限定。
+- 测试：41 → 47 用例（+6 通用化：默认配置 / 环境变量 / CLI 覆盖 / 自定义 scope 校验 / 默认拒绝自定义 / publish 计划自定义归属）Python 3.8 + 3.11 双版本全绿。
+- 版本四件 0.2.0；校验全绿（validate / preflight / pack）。
+
 ## v0.1.1 (2026-08-29)
 
-修复（维护性，免费家族「仅维护性修复」边界内）：
+修复（维护性更新）：
 
 - **ClawHub 发布归属（关键修复）**：`publish` 生成的 clawhub 命令默认带 `--owner yottameta`
   （org handle），避免漏传导致发布到 CLI 登录的个人账号（2026-08-29 元造 / 元守曾误发到
@@ -15,7 +26,7 @@
 
 初始发布：
 
-- 定位：元守 —— 发布前守门（0 元免费开源，工坊 / 质量与工程线）。把元阁「发布规范 + 已踩过的坑」
+- 定位：元守 —— 发布前守门（开源，工坊 / 质量与工程线）。把元阁「发布规范 + 已踩过的坑」
   固化成确定性 CLI，任何智能体照流程走不踩坑。
 - CLI：零依赖（Python 3.8+ 标准库）yotta_publish_guard.py —— check（full / github / self 三档模式，
   聚合元安 / 元审 / 元信 verdict，输出发布就绪报告）/ pack（npm pack --dry-run 无 pyc、关键文件在包内，

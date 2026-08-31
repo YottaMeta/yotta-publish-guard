@@ -82,5 +82,5 @@ ClawHub 进入 pending scans，转公开后复核 verdict。
 - **README 缺四方式安装**：补 npx / git clone / Download ZIP / install.sh 四段（发布规范 §3.3.1）。
 - **版本四件为什么必须对齐**：SKILL / package / CHANGELOG / CLI 不一致会导致用户装到的版本与
   文档、徽章对不上。
-- **--force 什么时候用**：仅在你确认「跳过闸门」是正确决定时显式使用；工具默认不推未通过校验的内容。
+- **--force 什么时候用**：仅在你确认「跳过闸门」是正确决定时显式使用；工具默认不会把未通过校验的内容发布出去。
 - **自用技能**：不需要任何发布流程，`check --self-use` 只查本体即可。

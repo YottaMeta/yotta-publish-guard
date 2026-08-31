@@ -1,7 +1,7 @@
 ---
 name: yotta-publish-guard
-version: 0.1.1
-description: 元守 —— 发布前守门：check 聚合校验（full / github / self 三档模式，可聚合元安/元审/元信 verdict）+ pack（npm pack 无 pyc / 关键文件在包内）+ versions（package/SKILL/CHANGELOG/CLI 四件对齐）+ names（npm/GitHub/ClawHub 三通道查重）+ publish 命令封装（--channels / --github-only 渠道可选，--clawhub-owner 归属默认 yottameta，默认 dry-run，--exec 执行，--force 显式跳过推送闸门）。触发：发布任何 yotta- 技能前、改完技能准备推 GitHub / npm / ClawHub 时、想批量核对版本或查重名称时；或用户说 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐 等。边界（Do NOT trigger）：不替用户做发布决策与人工审查；网络不可用时只降级提示、不伪造结果；不做技能内容开发（脚手架用元造 yotta-skill-creator，正文需人工开发）。
+version: 0.2.0
+description: 元守 —— 通用发布前守门（默认 YottaMeta 归属，可自定义为任意发布组织）：check 聚合校验（full / github / self 三档模式，可聚合元安/元审/元信 verdict）+ pack（npm pack 无 pyc / 关键文件在包内）+ versions（package/SKILL/CHANGELOG/CLI 四件对齐）+ names（npm/GitHub/ClawHub 三通道查重）+ publish 命令封装（--channels / --github-only 渠道可选，默认 dry-run，--exec 执行，--force 显式跳过推送闸门；归属经 CLI 参数或环境变量自定义，缺省 YottaMeta 开箱即用）。触发：发布技能前、改完技能准备推 GitHub / npm / ClawHub 时、想批量核对版本或查重名称时；或用户说 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐 等。边界（Do NOT trigger）：不替用户做发布决策与人工审查；网络不可用时只降级提示、不伪造结果；不做技能内容开发（脚手架用元造 yotta-skill-creator，正文需人工开发）；不持有、不读取任何平台凭据（发布鉴权由各平台 CLI 按使用者本机配置完成）。
 license: MIT
 metadata:
   zh_name: 元守
@@ -9,9 +9,10 @@ metadata:
 
 # 元守（yotta-publish-guard）
 
-**发布前守门**：把元阁「发布规范 + 已踩过的坑」固化成确定性 CLI——`check` 聚合校验、
+**通用发布前守门**：把「发布规范 + 已踩过的坑」固化成确定性 CLI——`check` 聚合校验、
 `pack` 打包检查、`versions` 版本四件对齐、`names` 名称三通道查重、`publish` 发布命令封装，
-任何智能体照流程走不踩坑。**零依赖（Python 3.8+ 标准库），Windows + Linux + macOS 通用。**
+任何开发者 / 团队照流程走不踩坑。**零依赖（Python 3.8+ 标准库），Windows + Linux + macOS 通用。**
+默认归属 YottaMeta 开箱即用；其他发布组织按自己的归属配置即可（不持有、不读取任何平台凭据）。
 
 ```bash
 python3 scripts/yotta_publish_guard.py check ./yotta-my-tool
@@ -20,7 +21,7 @@ python3 scripts/yotta_publish_guard.py check ./yotta-my-tool
 ## 何时使用
 
 - 新技能发布前，把校验 / 版本对齐 / 查重 / 打包检查 / 发布命令一次性跑完；
-- 只推 GitHub（不推 npm / ClawHub），或只想给自用技能做本体检查；
+- 仅发布到 GitHub（npm / ClawHub 不启用），或只想给自用技能做本体检查；
 - 改完既有技能准备升版本、重新三源发布前的复核。
 
 **Do NOT trigger**：
@@ -61,7 +62,14 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 - **pack**：`npm pack --dry-run` 检查——包内无 pyc / __pycache__、关键文件（SKILL / LICENSE / README 中英）在包内；npm 不可用本地回退列举。
 - **versions**：package.json / SKILL.md / CHANGELOG 顶部 / CLI `VERSION` 常量四件对齐。
 - **names**：npm view / gh repo view / clawhub search 三通道查重；网络失败降级为手动查重提示。
-- **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish），clawhub publish 默认 `--owner yottameta` 归属 org（`--clawhub-owner` 可改），默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
+- **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic → npm publish → clawhub publish），归属（npm scope / GitHub org / ClawHub owner / topic）按配置生成，默认 YottaMeta；默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
+
+## 归属配置（可自定义）
+
+本技能默认校验 / 发布命令面向 YottaMeta 归属（npm `@yottameta` / GitHub `YottaMeta` / ClawHub `yottameta` / topic `yottaskills`），开箱即用。
+其他发布组织可将其改为自己的归属（npm scope / GitHub org / ClawHub owner / topic），改后校验、查重、发布命令全部按新归属生成。
+归属通过 CLI 参数或环境变量指定；使用本技能的 AI 会按需引导配置。
+本技能不持有、不读取任何平台凭据——npm / gh / clawhub 的发布鉴权由各平台 CLI 按使用者本机配置完成。
 
 ## 发布渠道（可选）
 

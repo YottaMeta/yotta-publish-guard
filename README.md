@@ -6,8 +6,8 @@
 
 <h1 align="center">yotta-publish-guard · 元守 (YuanShou)</h1>
 
-<p align="center">YottaMeta's <b>pre-publish release guard</b> for yotta- skills: it folds the release standard and every pitfall already hit into one deterministic CLI — <code>check</code> (aggregated validation, full / github / self modes) · <code>pack</code> (npm pack dry-run) · <code>versions</code> (four-way version alignment) · <code>names</code> (three-channel name availability) · <code>publish</code> (command wrapper with a push gate). <b>Zero dependencies (Python 3.8+ standard library)</b>; Windows + Linux + macOS.</p>
-<p align="center">Triggers when publishing any yotta- skill, after editing a skill before pushing to GitHub / npm / ClawHub, or when checking versions or name availability in batch; or says 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐.</p>
+<p align="center">A <b>generic pre-publish release guard</b> (defaults to the YottaMeta family, customizable to any publishing organization): it folds the release standard and every pitfall already hit into one deterministic CLI — <code>check</code> (aggregated validation, full / github / self modes) · <code>pack</code> (npm pack dry-run) · <code>versions</code> (four-way version alignment) · <code>names</code> (three-channel name availability) · <code>publish</code> (command wrapper with a push gate). <b>Zero dependencies (Python 3.8+ standard library)</b>; Windows + Linux + macOS.</p>
+<p align="center">Triggers when publishing a skill, after editing before pushing to GitHub / npm / ClawHub, or when checking versions or name availability in batch; or says 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐. Defaults to YottaMeta ownership and can be customized for any organization; the skill never holds or reads platform credentials — authentication is done by each platform CLI using the user's local config.</p>
 
 <p align="center">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue" /></a>
@@ -20,7 +20,11 @@
 
 ## What it is
 
-Publishing a skill across GitHub / npm / ClawHub touches a dozen checkpoints: release-standard validation, version alignment across four files, npm pack without pyc, name availability on three channels, git proxy flags, ClawHub quoting, gh --description. YuanShou makes the whole "is it ready to publish?" question one command, and wraps the actual publish steps behind a push gate that blocks by default.
+Publishing a skill across GitHub / npm / ClawHub touches a dozen checkpoints: release-standard validation, version alignment across four files, npm pack without pyc, name availability on three channels, git proxy flags, ClawHub quoting, gh --description. YuanShou makes the whole "is it ready to publish?" question one command, and wraps the actual publish steps behind a push gate that blocks by default. It validates against your own publishing ownership (npm scope / GitHub org / ClawHub owner / topic), defaulting to YottaMeta for out-of-the-box use.</p>
+
+## Custom ownership
+
+Validation, name checks, and generated publish commands all follow the configured ownership (npm scope / GitHub org / ClawHub owner / GitHub topic). YottaMeta values are the defaults; other organizations point it at their own ownership via CLI flags or environment variables — the AI using this skill guides the setup. No platform credentials are held or read by this skill; npm / gh / clawhub authenticate with the user's local configuration.
 
 ## Commands
 

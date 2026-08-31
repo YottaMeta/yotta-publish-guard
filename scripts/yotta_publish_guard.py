@@ -32,7 +32,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.1.1"
+VERSION = "0.2.0"
 TOOL_NAME = "yotta-publish-guard"
 CN_NAME = "元守"
 
@@ -47,19 +47,71 @@ COLLOQUIAL_PHRASES = (
 )
 AI_INSTALL_GUIDANCE = ("AI 帮你装", "让 AI 帮", "自动帮你装")
 
-FOUR_WAYS = {
-    "方式一 npx 一行装": re.compile(r"npx\s+-y\s+@yottameta/[^\s`\"]+"),
-    "方式二 git clone": re.compile(r"git\s+clone\s+https?://github\.com/YottaMeta/"),
-    "方式三 Download ZIP": re.compile(r"Download\s+ZIP|下载压缩包|下载 ZIP"),
-    "方式四 install.sh": re.compile(r"install\.sh\s+--agent"),
-}
-FORBIDDEN_INSTALL = {
-    "npx skills（走 GitHub 克隆，无代理不可用）": re.compile(r"npx\s+skills\b", re.I),
-    "-g 安装（为未安装智能体建目录，污染）": re.compile(
-        r"npx\s+-y\s+@yottameta/[^\s`\"]+\s+-g|install\.sh\s+-g"),
-}
+class GuardConfig:
+    """发布归属配置（可自定义，默认 YottaMeta）。
 
-# 外部校验器 CLI 脚本名（与技能目录名不一致的特例）
+    自定义归属的取值由 CLI 参数或环境变量注入，支持将本守门复用于
+    任意发布组织；默认值即 YottaMeta 家族配置，开箱即用。
+    本技能不持有、不读取任何平台凭据——发布鉴权由各平台 CLI
+    （npm / gh / clawhub）按使用者本机配置完成。
+    """
+
+    def __init__(self, npm_scope="@yottameta", github_org="YottaMeta",
+                 clawhub_owner="yottameta", topic="yottaskills"):
+        self.npm_scope = _norm_scope(npm_scope)
+        self.github_org = str(github_org or "YottaMeta")
+        self.clawhub_owner = str(clawhub_owner or "yottameta")
+        self.topic = str(topic or "yottaskills")
+
+    @property
+    def npm_scope_full(self):
+        return self.npm_scope
+
+
+def _norm_scope(v):
+    """规范化 npm scope：确保以 @ 开头且无尾部斜杠。"""
+    v = str(v or "@yottameta").strip()
+    if not v.startswith("@"):
+        v = "@" + v
+    return v.rstrip("/")
+
+
+def resolve_config(args=None) -> GuardConfig:
+    """解析发布归属配置：CLI 参数优先，其次环境变量，最后默认。"""
+    def pick(cli_val, env_key, default):
+        if cli_val:
+            return cli_val
+        env = os.environ.get(env_key)
+        if env:
+            return env
+        return default
+    return GuardConfig(
+        npm_scope=pick(getattr(args, "npm_scope", None), "YOTTA_GUARD_NPM_SCOPE", "@yottameta"),
+        github_org=pick(getattr(args, "github_org", None), "YOTTA_GUARD_GITHUB_ORG", "YottaMeta"),
+        clawhub_owner=pick(getattr(args, "clawhub_owner", None), "YOTTA_GUARD_CLAWHUB_OWNER", "yottameta"),
+        topic=pick(getattr(args, "topic", None), "YOTTA_GUARD_TOPIC", "yottaskills"),
+    )
+
+
+def _install_patterns(cfg: GuardConfig):
+    """按配置生成 README 四方式安装校验正则（不再写死 YottaMeta）。"""
+    scope = cfg.npm_scope_full
+    org = cfg.github_org
+    return {
+        "方式一 npx 一行装": re.compile(r"npx\s+-y\s+" + re.escape(scope) + r"/[^\s`\"]+"),
+        "方式二 git clone": re.compile(r"git\s+clone\s+https?://github\.com/" + re.escape(org) + r"/"),
+        "方式三 Download ZIP": re.compile(r"Download\s+ZIP|下载压缩包|下载 ZIP"),
+        "方式四 install.sh": re.compile(r"install\.sh\s+--agent"),
+    }, {
+        "npx skills（走 GitHub 克隆，无代理不可用）": re.compile(r"npx\s+skills\b", re.I),
+        "-g 安装（为未安装智能体建目录，污染）": re.compile(
+            r"npx\s+-y\s+" + re.escape(scope) + r"/[^\s`\"]+\s+-g|install\.sh\s+-g"),
+    }
+
+
+FOUR_WAYS, FORBIDDEN_INSTALL = _install_patterns(GuardConfig())
+
+# 可选校验器 CLI 脚本名（与技能目录名不一致的特例）
 EXTERNAL_CLI_SCRIPTS = {
     "yotta-security-audit": "yotta_audit.py",
     "yotta-vetter": "yotta_vetter.py",
@@ -121,7 +173,8 @@ def parse_frontmatter(text: str) -> dict:
 # --------------------------------------------------------------------------
 # 内置校验（自包含副本，不依赖仓库 tools/）
 # --------------------------------------------------------------------------
-def validate_dir(skill_dir: Path, mode="full"):
+def validate_dir(skill_dir: Path, mode="full", config=None):
+    cfg = config or resolve_config()
     """返回 (errors, warns)。skill_dir 为技能目录绝对路径。
 
     mode:
@@ -181,7 +234,7 @@ def validate_dir(skill_dir: Path, mode="full"):
         if require_full:
             if not re.search(r"Language[^<\n]{0,20}English|English.*中文", rtext):
                 errors.append("README.md 缺少语言切换标识（<b>Language</b>: English · 中文）")
-            check_readme_install(rtext, "README.md", errors, warns)
+            check_readme_install(rtext, "README.md", errors, warns, config=cfg)
     rzt = skill_dir / "README.zh-CN.md"
     if not rzt.is_file():
         if require_full:
@@ -202,9 +255,9 @@ def validate_dir(skill_dir: Path, mode="full"):
         try:
             data = json.loads(pkg.read_text(encoding="utf-8"))
             pkg_v = str(data.get("version") or "")
-            if data.get("name") != "@yottameta/" + slug:
-                errors.append("package.json name=%r 与 @yottameta/%s 不一致"
-                              % (data.get("name"), slug))
+            expect = cfg.npm_scope_full + "/" + slug
+            if data.get("name") != expect:
+                errors.append("package.json name=%r 与 %s 不一致" % (data.get("name"), expect))
         except Exception as e:
             errors.append("package.json 解析失败: %s" % e)
     skill_v = fm.get("version")
@@ -253,20 +306,22 @@ def check_voice(text: str, label: str):
     return errs
 
 
-def check_readme_install(text: str, label: str, errors, warns):
-    for name, pat in FOUR_WAYS.items():
+def check_readme_install(text: str, label: str, errors, warns, config=None):
+    cfg = config or resolve_config()
+    ways, forbidden = _install_patterns(cfg)
+    for name, pat in ways.items():
         if not pat.search(text):
-            errors.append("%s 缺少%s（发布规范 §3.3.1 四方式安装）" % (label, name))
-    for name, pat in FORBIDDEN_INSTALL.items():
+            errors.append("%s 缺少%s（发布规范四方式安装）" % (label, name))
+    for name, pat in forbidden.items():
         if pat.search(text):
             errors.append("%s 命中禁用安装方式：%s" % (label, name))
 
 
 # --------------------------------------------------------------------------
-# 外部校验器（元安 / 元审 / 元信，若已装）
+# 可选校验器（元安 / 元审 / 元信，若已装）
 # --------------------------------------------------------------------------
 def find_external_cli(name: str) -> Path:
-    """在常见位置查找外部技能 CLI。name 为技能目录名（如 yotta-security-audit）。"""
+    """在常见位置查找可选的校验技能 CLI。name 为技能目录名（如 yotta-security-audit）。"""
     script = EXTERNAL_CLI_SCRIPTS.get(name) or ("%s.py" % name.replace("-", "_"))
     candidates = []
     here = Path(__file__).resolve()
@@ -348,7 +403,7 @@ def _json_summary(out: str) -> str:
 
 
 def external_verdict(name, run_args, label):
-    """运行外部校验器；返回 (ok, summary)。找不到/失败不阻断。"""
+    """运行可选的校验器；返回 (ok, summary)。找不到/失败不阻断。"""
     cli = find_external_cli(name)
     if cli is None:
         return None, "%s 未安装，跳过（可选：安装后加 %s 复查）" % (
@@ -368,9 +423,10 @@ def external_verdict(name, run_args, label):
 # --------------------------------------------------------------------------
 def cmd_check(args) -> int:
     d = Path(args.dir).expanduser().resolve()
-    errors, warns = validate_dir(d, mode="self" if args.self_use else "full")
+    cfg = resolve_config(args)
+    errors, warns = validate_dir(d, mode="self" if args.self_use else "full", config=cfg)
     mode = "自用模式（只查技能本体）" if args.self_use else "发布就绪检查"
-    print("== %s %s v%s —— %s ==" % (CN_NAME, TOOL_NAME, VERSION, mode))
+    print("== %s %s v%s —— %s（归属 %s / %s）==" % (CN_NAME, TOOL_NAME, VERSION, mode, cfg.npm_scope_full, cfg.github_org))
     print("技能目录: %s" % d)
 
     optional = []
@@ -521,10 +577,10 @@ def cmd_versions(args) -> int:
     return 0
 
 
-def _npm_taken(slug: str):
+def _npm_taken(slug: str, cfg: GuardConfig):
     cache = tempfile.mkdtemp(prefix="pg-npmcache-")
     code, out, err = run_cmd(
-        ["npm", "view", "@yottameta/" + slug, "version", "--cache", cache])
+        ["npm", "view", cfg.npm_scope_full + "/" + slug, "version", "--cache", cache])
     if code == 0:
         return "taken", out.strip().splitlines()[-1] if out.strip() else "?"
     if "404" in err or "ENOTFOUND" in err or "E404" in err:
@@ -532,8 +588,8 @@ def _npm_taken(slug: str):
     return "unknown", err.strip()[:120]
 
 
-def _gh_taken(slug: str):
-    code, out, err = run_cmd(["gh", "repo", "view", "YottaMeta/" + slug])
+def _gh_taken(slug: str, cfg: GuardConfig):
+    code, out, err = run_cmd(["gh", "repo", "view", cfg.github_org + "/" + slug])
     if code == 0:
         return "taken", ""
     if "not found" in err.lower() or "could not resolve" in err.lower() or "404" in err:
@@ -552,9 +608,10 @@ def _clawhub_taken(slug: str):
 
 def cmd_names(args) -> int:
     slug = Path(args.dir).expanduser().resolve().name
-    print("== 名称三通道查重：%s ==" % slug)
-    checks = [("npm @yottameta/%s" % slug, _npm_taken(slug)),
-              ("GitHub YottaMeta/%s" % slug, _gh_taken(slug)),
+    cfg = resolve_config(args)
+    print("== 名称三通道查重：%s（归属 %s / %s）==\n" % (slug, cfg.npm_scope_full, cfg.github_org))
+    checks = [("npm %s/%s" % (cfg.npm_scope_full, slug), _npm_taken(slug, cfg)),
+              ("GitHub %s/%s" % (cfg.github_org, slug), _gh_taken(slug, cfg)),
               ("ClawHub %s" % slug, _clawhub_taken(slug))]
     unknown = taken = 0
     for label, (status, detail) in checks:
@@ -568,8 +625,8 @@ def cmd_names(args) -> int:
             print("  [UNKNOWN] %s —— 无法确认（%s）" % (label, detail or "网络/CLI 不可用"))
     if unknown:
         print("提示：以下渠道无法确认，发布前请手动查重：")
-        print("  - npm:  https://www.npmjs.com/package/@yottameta/%s" % slug)
-        print("  - GitHub: https://github.com/YottaMeta/%s" % slug)
+        print("  - npm:  https://www.npmjs.com/package/%s/%s" % (cfg.npm_scope_full, slug))
+        print("  - GitHub: https://github.com/%s/%s" % (cfg.github_org, slug))
         print("  - ClawHub: https://clawhub.com (search %s)" % slug)
         return 1
     if taken:
@@ -610,11 +667,12 @@ def _shell_quote(v):
 GH_DESC_MAX = 350  # GitHub repo description 上限（createRepository 拒绝 >350 字符）
 
 
-def _publish_plan(d: Path, args):
+def _publish_plan(d: Path, args, config=None):
     """构建发布命令计划。返回 (渠道列表, 计划行列表, 阻断 errors)。"""
+    cfg = config or resolve_config(args)
     channels = _channels_from_args(args)
     mode = "github" if channels == ["github"] else "full"
-    errors, warns = validate_dir(d, mode=mode)
+    errors, warns = validate_dir(d, mode=mode, config=cfg)
     plan = []
     slug = d.name
     pkg_v = "0.1.0"
@@ -648,11 +706,11 @@ def _publish_plan(d: Path, args):
         plan.append(("git commit", ["git", "commit", "-m",
                                     "feat: initial release v%s" % pkg_v]))
         plan.append(("gh repo create",
-                     ["gh", "repo", "create", "YottaMeta/" + slug, "--public",
+                     ["gh", "repo", "create", cfg.github_org + "/" + slug, "--public",
                       "--source=.", "--push", "--description", desc]))
         plan.append(("gh add topic",
-                     ["gh", "repo", "edit", "YottaMeta/" + slug, "--add-topic",
-                      "yottaskills"]))
+                     ["gh", "repo", "edit", cfg.github_org + "/" + slug, "--add-topic",
+                      cfg.topic]))
     if "npm" in channels:
         npm_cmd = ["npm", "publish", "--registry=https://registry.npmjs.org/"]
         if os.name == "nt":
@@ -660,7 +718,7 @@ def _publish_plan(d: Path, args):
             npm_cmd += ["--cache", cache]
         plan.append(("npm publish", npm_cmd))
     if "clawhub" in channels:
-        owner = getattr(args, "clawhub_owner", "") or "yottameta"
+        owner = cfg.clawhub_owner
         plan.append(("clawhub publish",
                      ["clawhub", "publish", str(d),
                       "--name", "%s %s" % (zh, slug),
@@ -673,7 +731,7 @@ def _publish_plan(d: Path, args):
                      "git 走代理需加 -c http.sslBackend=openssl（schannel 报 SEC_E_NO_CREDENTIALS）"))
     if "clawhub" in channels:
         plan.append(("note",
-                     "clawhub 发布默认归属 org yottameta（--clawhub-owner 可改，勿发布到个人账号）；GitHub 建仓必须带 --description（否则 About 显示 No description）"))
+                     "clawhub 发布归属 org=%s（勿发布到个人账号）；GitHub 建仓必须带 --description（否则 About 显示 No description）" % cfg.clawhub_owner))
     return channels, plan, errors
 
 
@@ -725,6 +783,15 @@ def build_parser():
         description="%s —— 发布前守门（零依赖 Python 3.8+）" % CN_NAME,
     )
     ap.add_argument("--version", action="version", version="%(prog)s " + VERSION)
+    g = ap.add_argument_group("归属配置（可选，缺省 YottaMeta 开箱即用）")
+    g.add_argument("--npm-scope", default=None, metavar="SCOPE",
+                   help="npm scope（如 @acme；缺省 @yottameta）")
+    g.add_argument("--github-org", default=None, metavar="ORG",
+                   help="GitHub org（如 AcmeOrg；缺省 YottaMeta）")
+    g.add_argument("--clawhub-owner", default=None, metavar="OWNER",
+                   help="ClawHub 发布归属 org（缺省 yottameta）")
+    g.add_argument("--topic", default=None, metavar="TOPIC",
+                   help="GitHub 仓库 topic（缺省 yottaskills）")
     sub = ap.add_subparsers(dest="command", required=True)
 
     pc = sub.add_parser("check", help="聚合校验，输出发布就绪报告")
@@ -760,8 +827,7 @@ def build_parser():
                     help="只推 GitHub（等价 --channels github；npm / ClawHub 非必选）")
     ppu.add_argument("--categories", default="", help="ClawHub 分类 slug（逗号分隔）")
     ppu.add_argument("--topics", default="", help="ClawHub topics（逗号分隔）")
-    ppu.add_argument("--clawhub-owner", default="yottameta",
-                    help="ClawHub 发布归属 org handle（默认 yottameta；勿发布到个人账号）")
+    ppu.add_argument("--clawhub-owner", default=None, help="ClawHub 发布归属 org handle（默认见全局归属配置）")
     ppu.add_argument("--description", default="", help="GitHub 仓库简介（覆盖 package.json description）")
     ppu.set_defaults(func=cmd_publish)
     return ap

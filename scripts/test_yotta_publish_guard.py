@@ -455,5 +455,110 @@ class TestIsSecurity(unittest.TestCase):
         self.assertFalse(pg.is_security("yotta-x", "文档写作工具"))
 
 
+
+class TestGenericConfig(unittest.TestCase):
+    """v0.2.0 通用化：scope/org/owner/topic 可配置，默认仍 yottameta。"""
+
+    def test_default_config(self):
+        cfg = pg.resolve_config(None)
+        self.assertEqual(cfg.npm_scope, "@yottameta")
+        self.assertEqual(cfg.github_org, "YottaMeta")
+        self.assertEqual(cfg.clawhub_owner, "yottameta")
+        self.assertEqual(cfg.topic, "yottaskills")
+
+    def test_env_config(self):
+        import os
+        os.environ["YOTTA_GUARD_NPM_SCOPE"] = "@acme"
+        os.environ["YOTTA_GUARD_GITHUB_ORG"] = "AcmeOrg"
+        os.environ["YOTTA_GUARD_CLAWHUB_OWNER"] = "acme"
+        os.environ["YOTTA_GUARD_TOPIC"] = "skills"
+        try:
+            cfg = pg.resolve_config(None)
+            self.assertEqual(cfg.npm_scope, "@acme")
+            self.assertEqual(cfg.github_org, "AcmeOrg")
+            self.assertEqual(cfg.clawhub_owner, "acme")
+            self.assertEqual(cfg.topic, "skills")
+        finally:
+            for k in ("YOTTA_GUARD_NPM_SCOPE", "YOTTA_GUARD_GITHUB_ORG",
+                      "YOTTA_GUARD_CLAWHUB_OWNER", "YOTTA_GUARD_TOPIC"):
+                os.environ.pop(k, None)
+
+    def test_cli_config_overrides_env(self):
+        import os
+        os.environ["YOTTA_GUARD_NPM_SCOPE"] = "@acme"
+        try:
+            cfg = pg.resolve_config(argparse.Namespace(
+                npm_scope="@other", github_org=None, clawhub_owner=None, topic=None))
+            self.assertEqual(cfg.npm_scope, "@other")
+        finally:
+            os.environ.pop("YOTTA_GUARD_NPM_SCOPE", None)
+
+    def test_validate_foreign_scope(self):
+        """自定义 scope 校验：package.json name=@acme/yotta-x 通过（非强制 yottameta）。"""
+        d = Path(tempfile.mkdtemp(prefix="pg-gen-"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        d = d / "yotta-x"
+        d.mkdir()
+        make_complete(d)
+        write(d, "package.json", json.dumps(
+            {"name": "@acme/yotta-x", "version": "0.1.0",
+             "description": "测试", "license": "MIT",
+             "files": ["SKILL.md", "LICENSE", "README.md", "README.zh-CN.md"]},
+            ensure_ascii=False, indent=2))
+        write(d, "README.md", README_EN.replace("@yottameta/yotta-x", "@acme/yotta-x")
+              .replace("YottaMeta/yotta-x", "AcmeOrg/yotta-x"))
+        write(d, "README.zh-CN.md", README_ZH.replace("@yottameta/yotta-x", "@acme/yotta-x")
+              .replace("YottaMeta/yotta-x", "AcmeOrg/yotta-x"))
+        cfg = pg.resolve_config(None)
+        cfg.npm_scope, cfg.github_org = "@acme", "AcmeOrg"
+        errors, _ = pg.validate_dir(d, mode="full", config=cfg)
+        self.assertEqual(errors, [], "errors: %s" % errors)
+
+    def test_validate_default_rejects_foreign_without_config(self):
+        """默认配置下，自定义 scope 的 package name 应报错（保持 yottameta 默认）。"""
+        d = Path(tempfile.mkdtemp(prefix="pg-gen2-"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        d = d / "yotta-x"
+        d.mkdir()
+        make_complete(d)
+        write(d, "package.json", json.dumps(
+            {"name": "@acme/yotta-x", "version": "0.1.0",
+             "description": "测试", "license": "MIT",
+             "files": ["SKILL.md", "LICENSE", "README.md", "README.zh-CN.md"]},
+            ensure_ascii=False, indent=2))
+        errors, _ = pg.validate_dir(d, mode="full")
+        self.assertTrue(any("@yottameta" in e for e in errors), "errors: %s" % errors)
+
+    def test_publish_plan_foreign_owner(self):
+        """publish 计划按配置 org/owner/topic 生成（gh repo create / clawhub --owner / topic）。"""
+        d = Path(tempfile.mkdtemp(prefix="pg-gen3-"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        d = d / "yotta-x"
+        d.mkdir()
+        make_complete(d)
+        write(d, "README.md", README_EN.replace("@yottameta/yotta-x", "@acme/yotta-x")
+              .replace("YottaMeta/yotta-x", "AcmeOrg/yotta-x"))
+        write(d, "README.zh-CN.md", README_ZH.replace("@yottameta/yotta-x", "@acme/yotta-x")
+              .replace("YottaMeta/yotta-x", "AcmeOrg/yotta-x"))
+        write(d, "package.json", json.dumps(
+            {"name": "@acme/yotta-x", "version": "0.1.0",
+             "description": "测试", "license": "MIT",
+             "files": ["SKILL.md", "LICENSE", "README.md", "README.zh-CN.md"]},
+            ensure_ascii=False, indent=2))
+        cfg = pg.resolve_config(None)
+        cfg.npm_scope, cfg.github_org = "@acme", "AcmeOrg"
+        cfg.clawhub_owner, cfg.topic = "acme", "skills"
+        channels, plan, errors = pg._publish_plan(d, argparse.Namespace(
+            github_only=False, channels="github,clawhub", description="",
+            categories="productivity", topics="", clawhub_owner="acme"), config=cfg)
+        self.assertEqual(errors, [])
+        joined = " ".join(" ".join(c) if isinstance(c, list) else c for _, c in plan)
+        self.assertIn("AcmeOrg/yotta-x", joined)
+        self.assertIn("--owner acme", joined)
+        self.assertIn("--add-topic skills", joined)
+        self.assertNotIn("YottaMeta/yotta-x", joined)
+        self.assertNotIn("--owner yottameta", joined)
+
+
 if __name__ == "__main__":
     unittest.main()
