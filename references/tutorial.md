@@ -31,7 +31,7 @@ python3 scripts/yotta_publish_guard.py pack ./yotta-demo-tool
 期望 `结果: PASS`：包内无 pyc、SKILL / LICENSE / README 中英四件齐全。
 若报「包内混入 pyc / __pycache__」→ 检查 package.json files 字段的 `!**/__pycache__` 否定模式。
 
-## 4. 版本四件对齐
+## 4. 版本五件对齐
 
 ```bash
 python3 scripts/yotta_publish_guard.py versions ./yotta-demo-tool
@@ -80,7 +80,7 @@ ClawHub 进入 pending scans，转公开后复核 verdict。
 - **check 报了对外口吻 ERROR**：README 出现内部口语（咱们 / 你自己 / 别忘了 等）或「AI 帮你装」
   类表述，改为中性专业措辞。
 - **README 缺四方式安装**：补 npx / git clone / Download ZIP / install.sh 四段（发布规范 §3.3.1）。
-- **版本四件为什么必须对齐**：SKILL / package / CHANGELOG / CLI 不一致会导致用户装到的版本与
+- **版本五件为什么必须对齐**：SKILL / package / CHANGELOG / CLI / SKILL 正文版本行不一致会导致用户装到的版本与
   文档、徽章对不上。
 - **--force 什么时候用**：仅在你确认「跳过闸门」是正确决定时显式使用；工具默认不会把未通过校验的内容发布出去。
 - **自用技能**：不需要任何发布流程，`check --self-use` 只查本体即可。

@@ -182,6 +182,20 @@ class TestVersions(TmpDir):
         code = pg.cmd_versions(argparse.Namespace(dir=str(self.d)))
         self.assertEqual(code, 2)
 
+    def test_body_version_line_aligned(self):
+        make_complete(self.d)
+        skill = self.d / "SKILL.md"
+        skill.write_text(skill.read_text(encoding="utf-8") + "\n版本：0.1.0\n", encoding="utf-8")
+        code = pg.cmd_versions(argparse.Namespace(dir=str(self.d)))
+        self.assertEqual(code, 0)
+
+    def test_body_version_line_mismatch(self):
+        make_complete(self.d)
+        skill = self.d / "SKILL.md"
+        skill.write_text(skill.read_text(encoding="utf-8") + "\n版本：0.8.5\n", encoding="utf-8")
+        code = pg.cmd_versions(argparse.Namespace(dir=str(self.d)))
+        self.assertEqual(code, 2)
+
 
 class TestPack(TmpDir):
     def _fake_npm(self, files):

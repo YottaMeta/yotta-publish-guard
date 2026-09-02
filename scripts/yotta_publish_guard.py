@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""yotta-publish-guard: 发布前守门 —— 聚合校验 / 版本四件对齐 / npm pack 检查 /
+"""yotta-publish-guard: 发布前守门 —— 聚合校验 / 版本五件对齐 / npm pack 检查 /
 名称三通道查重 / 三源发布命令封装（元阁「工坊」发布守门）。
 
 零依赖（Python 3.8+ 标准库）。用法:
   python3 scripts/yotta_publish_guard.py check <skill-dir> [--with-audit --with-vetter --with-verify]
   python3 scripts/yotta_publish_guard.py pack <skill-dir>          # npm pack --dry-run 检查
-  python3 scripts/yotta_publish_guard.py versions <skill-dir>      # 版本四件对齐
+  python3 scripts/yotta_publish_guard.py versions <skill-dir>      # 版本五件对齐
   python3 scripts/yotta_publish_guard.py names <skill-dir>         # 名称三通道查重（npm/GitHub/ClawHub）
   python3 scripts/yotta_publish_guard.py publish <skill-dir> [--dry-run] [--exec] [--force]
 
@@ -32,7 +32,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 TOOL_NAME = "yotta-publish-guard"
 CN_NAME = "元守"
 
@@ -541,7 +541,7 @@ def _cli_versions(d: Path, slug: str):
 def cmd_versions(args) -> int:
     d = Path(args.dir).expanduser().resolve()
     slug = d.name
-    pkg_v, skill_v, chg_v = None, None, None
+    pkg_v, skill_v, chg_v, body_v = None, None, None, None
     pkg = d / "package.json"
     if pkg.is_file():
         try:
@@ -550,7 +550,11 @@ def cmd_versions(args) -> int:
             pkg_v = ""
     skill = d / "SKILL.md"
     if skill.is_file():
-        skill_v = parse_frontmatter(skill.read_text(encoding="utf-8")).get("version")
+        skill_text = skill.read_text(encoding="utf-8")
+        skill_v = parse_frontmatter(skill_text).get("version")
+        body_match = re.search(r"版本[：:]\s*v?([0-9]+\.[0-9]+\.[0-9]+)", skill_text)
+        if body_match:
+            body_v = body_match.group(1)
     chg = d / "CHANGELOG.md"
     if chg.is_file():
         cm = re.search(r"^##\s*v?([0-9]+\.[0-9]+\.[0-9]+)",
@@ -560,9 +564,11 @@ def cmd_versions(args) -> int:
     cli_vers = _cli_versions(d, slug)
 
     rows = [("package.json", pkg_v), ("SKILL.md", skill_v), ("CHANGELOG", chg_v)]
+    if body_v:
+        rows.append(("SKILL.md 正文版本行", body_v))
     for name, v in cli_vers:
         rows.append(("CLI %s" % name, v))
-    print("== 版本四件对齐 ==")
+    print("== 版本五件对齐 ==")
     seen = set()
     for name, v in rows:
         print("  %-22s %s" % (name, v or "(缺失)"))
@@ -808,7 +814,7 @@ def build_parser():
     pp.add_argument("dir")
     pp.set_defaults(func=cmd_pack)
 
-    pv = sub.add_parser("versions", help="版本四件对齐（package / SKILL / CHANGELOG / CLI）")
+    pv = sub.add_parser("versions", help="版本五件对齐（package / SKILL frontmatter / SKILL 正文版本行 / CHANGELOG / CLI）")
     pv.add_argument("dir")
     pv.set_defaults(func=cmd_versions)
 

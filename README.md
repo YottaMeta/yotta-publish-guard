@@ -6,7 +6,7 @@
 
 <h1 align="center">yotta-publish-guard · 元守 (YuanShou)</h1>
 
-<p align="center">A <b>generic pre-publish release guard</b> (defaults to the YottaMeta family, customizable to any publishing organization): it folds the release standard and every pitfall already hit into one deterministic CLI — <code>check</code> (aggregated validation, full / github / self modes) · <code>pack</code> (npm pack dry-run) · <code>versions</code> (four-way version alignment) · <code>names</code> (three-channel name availability) · <code>publish</code> (command wrapper with a push gate). <b>Zero dependencies (Python 3.8+ standard library)</b>; Windows + Linux + macOS.</p>
+<p align="center">A <b>generic pre-publish release guard</b> (defaults to the YottaMeta family, customizable to any publishing organization): it folds the release standard and every pitfall already hit into one deterministic CLI — <code>check</code> (aggregated validation, full / github / self modes) · <code>pack</code> (npm pack dry-run) · <code>versions</code> (five-way version alignment) · <code>names</code> (three-channel name availability) · <code>publish</code> (command wrapper with a push gate). <b>Zero dependencies (Python 3.8+ standard library)</b>; Windows + Linux + macOS.</p>
 <p align="center">Triggers when publishing a skill, after editing before pushing to GitHub / npm / ClawHub, or when checking versions or name availability in batch; or says 元守 / 发布守门 / 发布前检查 / publish-guard / 推前检查 / 查重 / 版本对齐. Defaults to YottaMeta ownership and can be customized for any organization; the skill never holds or reads platform credentials — authentication is done by each platform CLI using the user's local config.</p>
 
 <p align="center">
@@ -49,7 +49,7 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 
 | Mode | How | Requires |
 |---|---|---|
-| full | `check` default / `publish` all channels | SKILL.md + LICENSE + bilingual four-way-install README + package.json + CHANGELOG (recommended) + four-way version alignment + no placeholders + balanced fences |
+| full | `check` default / `publish` all channels | SKILL.md + LICENSE + bilingual four-way-install README + package.json + CHANGELOG (recommended) + five-way version alignment + no placeholders + balanced fences |
 | github | `publish --github-only` | SKILL.md + LICENSE + README.md (English); npm artifacts not required |
 | self | `check --self-use` | skill body only: SKILL.md + frontmatter + no placeholders + balanced fences |
 

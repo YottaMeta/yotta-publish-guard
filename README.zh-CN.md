@@ -8,7 +8,7 @@
 
 <p align="center"><b>通用发布前守门</b>（默认 YottaMeta 归属，可自定义为任意发布组织）：把「发布规范 + 已踩过的坑」固化成确定性 CLI ——
 <code>check</code>（聚合校验，full / github / self 三档模式）· <code>pack</code>（npm pack 打包检查）·
-<code>versions</code>（版本四件对齐）· <code>names</code>（名称三通道查重）·
+<code>versions</code>（版本五件对齐）· <code>names</code>（名称三通道查重）·
 <code>publish</code>（发布命令封装 + 推送闸门）。<b>零其他依赖（Python 3.8+ 标准库）</b>；
 Windows + Linux + macOS 通用。</p>
 <p align="center">触发场景：发布技能前、改完技能准备推 GitHub / npm / ClawHub 时、
@@ -37,7 +37,7 @@ python3 scripts/yotta_publish_guard.py check ./yotta-my-tool
 python3 scripts/yotta_publish_guard.py check ./yotta-my-tool --with-audit --with-vetter --with-verify
 python3 scripts/yotta_publish_guard.py check ./yotta-private --self-use
 
-# 2) 打包检查 / 版本四件对齐 / 名称三通道查重
+# 2) 打包检查 / 版本五件对齐 / 名称三通道查重
 python3 scripts/yotta_publish_guard.py pack ./yotta-my-tool
 python3 scripts/yotta_publish_guard.py versions ./yotta-my-tool
 python3 scripts/yotta_publish_guard.py names ./yotta-my-tool
@@ -60,7 +60,7 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 
 | 模式 | 触发方式 | 要求 |
 |---|---|---|
-| full | `check` 默认 / `publish` 全渠道 | SKILL.md + LICENSE + README 中英四方式 + package.json + CHANGELOG（建议）+ 版本四件 + 无占位符 + 围栏 |
+| full | `check` 默认 / `publish` 全渠道 | SKILL.md + LICENSE + README 中英四方式 + package.json + CHANGELOG（建议）+ 版本五件 + 无占位符 + 围栏 |
 | github | `publish --github-only` | SKILL.md + LICENSE + README.md（英文）；不强制 npm 发布件 |
 | self | `check --self-use` | 只查技能本体：SKILL.md + frontmatter + 无占位符 + 围栏 |
 
@@ -68,7 +68,7 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 
 - **check**：内置校验（三档模式）+ 可选聚合元安 / 元审 / 元信 verdict（未安装自动降级提示）。
 - **pack**：`npm pack --dry-run` 检查——包内无 pyc / __pycache__、关键文件（SKILL / LICENSE / README 中英）在包内；npm 不可用本地回退。
-- **versions**：package.json / SKILL.md / CHANGELOG 顶部 / CLI `VERSION` 常量四件对齐。
+- **versions**：package.json / SKILL.md frontmatter / SKILL.md 正文版本行（如存在）/ CHANGELOG 顶部 / CLI `VERSION` 常量五件对齐。
 - **names**：npm view / gh repo view / clawhub search 三通道查重；网络失败降级为手动查重提示。
 - **publish**：生成发布命令计划（git init/add/commit → gh repo create --description + topic yottaskills → npm publish → clawhub publish），clawhub publish 默认 `--owner yottameta` 归属 org（`--clawhub-owner` 可改，防止误发到个人账号），默认 dry-run，`--exec` 按序执行，`--force` 显式跳过推送闸门。
 

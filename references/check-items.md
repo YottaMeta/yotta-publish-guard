@@ -30,9 +30,10 @@
   README.zh-CN.md 存在且未放反（不应出现 Language=English 标识）；中英各含四方式安装
   （npx 一行装 / git clone / Download ZIP / install.sh），并禁用 npx skills 与 -g 安装推荐。
 
-## 4. 版本四件（check 内联 + versions 子命令）
+## 4. 版本五件（check 内联 + versions 子命令）
 
 - package.json `version` ↔ SKILL.md frontmatter `version` 必须一致；
+- SKILL.md 正文版本行（如「版本：0.2.1」存在）必须与版本一致（v0.2.1 新增）；
 - CHANGELOG.md 顶部 `## vX.Y.Z` 与 package 一致（无标题则 WARN）；
 - CLI 脚本 `VERSION = "..."` 常量一致（versions 子命令会列出 scripts/ 下所有 yotta_ 脚本）。
 
