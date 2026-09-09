@@ -32,7 +32,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.2.1"
+VERSION = "0.3.0"
 TOOL_NAME = "yotta-publish-guard"
 CN_NAME = "元守"
 
