@@ -1,6 +1,7 @@
 ## v0.4.1 (2026-09-13)
 
 - 内置家族分类副本补入 `yotta-skills` 非安全家族排除，消除元阁发布门禁的 Defense Triple 假阳性。
+- 发布包排除测试脚本与 Python 缓存，避免 `scripts/test_*.py` / `__pycache__` / `.pyc` 进入 npm 包体。
 
 ## v0.4.0 (2026-09-13)
 
