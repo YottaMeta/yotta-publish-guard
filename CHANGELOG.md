@@ -1,3 +1,11 @@
+## v0.4.0 (2026-09-13)
+
+**P0-4.5 元守 before_publish 试点**：
+
+- 新增 `skill-manifest.json`，声明 `before_publish` / `publish_gate` / `fallback: wrapper`。
+- Codex 该事件为 `wrapper-only`：wrapper 已注册时门禁失败必须 block；未注册时只能 `explicit-unverified`。
+- 元阁适配器回归覆盖 wrapper 阻断与降级两条路径。
+
 ## v0.3.0 (2026-09-09)
 
 - 评测完善批 2：新增 references/faq.md（check 阻断 / 版本不一致 / pyc / 网络降级 / 安装排障）；SKILL.md 增加 FAQ 速查节。

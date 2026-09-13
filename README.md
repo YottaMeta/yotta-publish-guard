@@ -47,6 +47,8 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 
 ## Three check modes
 
+- **Host hook declaration** — `skill-manifest.json` declares `before_publish` / `publish_gate`; with the wrapper registered a failed gate blocks, without it the result is visibly marked `explicit-unverified`.
+
 | Mode | How | Requires |
 |---|---|---|
 | full | `check` default / `publish` all channels | SKILL.md + LICENSE + bilingual four-way-install README + package.json + CHANGELOG (recommended) + five-way version alignment + no placeholders + balanced fences |

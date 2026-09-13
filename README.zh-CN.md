@@ -58,6 +58,8 @@ python3 scripts/yotta_publish_guard.py publish ./yotta-my-tool --channels github
 
 ## 三档校验模式
 
+- **宿主 hook 声明**——`skill-manifest.json` 声明 `before_publish` / `publish_gate`；wrapper 已注册时门禁失败阻断，未注册时明确标记 `explicit-unverified`。
+
 | 模式 | 触发方式 | 要求 |
 |---|---|---|
 | full | `check` 默认 / `publish` 全渠道 | SKILL.md + LICENSE + README 中英四方式 + package.json + CHANGELOG（建议）+ 版本五件 + 无占位符 + 围栏 |
