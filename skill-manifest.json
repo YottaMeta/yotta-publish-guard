@@ -3,7 +3,7 @@
   "slug": "yotta-publish-guard",
   "name": "元守",
   "package": "@yottameta/yotta-publish-guard",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "trust": "yottameta",
   "install": {
     "idempotent": true

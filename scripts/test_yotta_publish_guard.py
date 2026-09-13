@@ -458,6 +458,8 @@ class TestIsSecurity(unittest.TestCase):
         # 工具类技能即使描述含「审查」也不应误分类为安全家族
         self.assertFalse(pg.is_security("yotta-publish-guard",
                                         "发布前守门，含人工审查与版本对齐"))
+        self.assertFalse(pg.is_security("yotta-skills",
+                                        "技能安装编排，含安全扫描与门禁路由"))
         self.assertFalse(pg.is_security("yotta-skill-creator", "脚手架"))
 
     def test_family_security(self):

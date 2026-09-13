@@ -32,7 +32,7 @@ try:
 except Exception:
     pass
 
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 TOOL_NAME = "yotta-publish-guard"
 CN_NAME = "元守"
 
@@ -134,7 +134,7 @@ SECURITY_KEYWORDS = ("security", "安全", "审计", "威胁", "侦察", "密钥
 
 # 明确非安全家族的工具类技能（防止描述关键词如「审查」被误分类，
 # 导致 Defense Triple 误报、ClawHub categories 错选 security）
-NON_SECURITY_NAMES = {"yotta-skill-creator", "yotta-publish-guard"}
+NON_SECURITY_NAMES = {"yotta-skill-creator", "yotta-publish-guard", "yotta-skills"}
 
 
 def is_security(slug: str, desc: str) -> bool:
