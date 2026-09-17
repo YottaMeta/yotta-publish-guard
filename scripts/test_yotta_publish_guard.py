@@ -461,6 +461,9 @@ class TestIsSecurity(unittest.TestCase):
         self.assertFalse(pg.is_security("yotta-skills",
                                         "技能安装编排，含安全扫描与门禁路由"))
         self.assertFalse(pg.is_security("yotta-skill-creator", "脚手架"))
+        self.assertFalse(pg.is_security(
+            "yotta-humanize",
+            "去 AI 味的中文写作编辑技能：检测器引擎识别并改写 AI 腔文本"))
 
     def test_family_security(self):
         self.assertTrue(pg.is_security("yotta-agent-hardening", "加固扫描"))

@@ -17,8 +17,8 @@
 
 - 目录名：小写连字符规范（`^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$`）。
 - SKILL.md：存在；frontmatter `name` 与目录名一致；`description` / `version` / `license` 齐全。
-- 安全家族 Defense Triple：技能名或描述命中安全关键词时，SKILL.md 须含 范围 / 授权 / 法律 声明
-  （英文 Scope / authorized / legal 亦可）。
+- 安全家族 Defense Triple：显式安全技能，或未知外部技能名 / 描述命中安全关键词时，SKILL.md 须含 范围 / 授权 / 法律 声明
+  （英文 Scope / authorized / legal 亦可）。已知非安全家族优先走排除集，避免“检测 / 审查”等通用词误报。
 - 无残留占位符（双花括号模板变量，所有 .md/.json/.sh/.yml/.yaml）；技能自带 template/ 语料豁免。
 - Markdown 代码围栏配对（三个反引号成对）。
 
